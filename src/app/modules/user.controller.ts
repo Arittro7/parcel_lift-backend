@@ -1,12 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status-codes"
 import { userService } from "./user.service";
-import AppError from "../errorHelpers/AppError";
+import { catchAsync } from "../utils/catchAsync";
 
-const createUser = async(req: Request, res: Response, next: NextFunction) => {
+const createUser = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
   try {
-    throw new AppError(httpStatus.BAD_REQUEST, "Fake Error")
     
     const user = await userService.createUser(req.body)
     
@@ -20,8 +20,19 @@ const createUser = async(req: Request, res: Response, next: NextFunction) => {
     console.log(err);
     next(err)
   }
-}
+})
+
+const getAllUsers = catchAsync(async(req: Request, res: Response, next: NextFunction) =>{
+  const users = await userService.getAllUsers()
+
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "All User retrieved successfully",
+    data: users
+  })
+})
 
 export const UserController = {
-  createUser
+  createUser,
+  getAllUsers
 }
