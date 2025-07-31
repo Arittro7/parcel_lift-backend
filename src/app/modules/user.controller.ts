@@ -4,15 +4,18 @@ import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status-codes"
 import { userService } from "./user.service";
 import { catchAsync } from "../utils/catchAsync";
+import { sendResponse } from "../utils/sendResponse";
 
 const createUser = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
   try {
     
     const user = await userService.createUser(req.body)
     
-    res.status(httpStatus.CREATED).json({
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.CREATED,
       message: "User Created Successfully",
-      user
+      data: user
     })
     
 
@@ -23,13 +26,17 @@ const createUser = catchAsync(async(req: Request, res: Response, next: NextFunct
 })
 
 const getAllUsers = catchAsync(async(req: Request, res: Response, next: NextFunction) =>{
-  const users = await userService.getAllUsers()
+  const result = await userService.getAllUsers()
 
-  res.status(httpStatus.OK).json({
+  sendResponse(res, {
     success: true,
-    message: "All User retrieved successfully",
-    data: users
+    statusCode: httpStatus.OK,
+    message: "User Retrieved successfully",
+    // data: result.data,
+    // meta:result.meta   //` got err for this 2 line 
+    data: result,
   })
+
 })
 
 export const UserController = {
