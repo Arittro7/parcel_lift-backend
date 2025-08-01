@@ -24,7 +24,7 @@ export interface IUser {
   email: string;
   password: string;
   role: Role;
-  status: UserStatus;
+  status?: UserStatus;
   phone?: string;
   picture?: string;
   address?: string;
