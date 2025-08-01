@@ -14,3 +14,4 @@ router.patch("/:id",validateRequest(updateUserZodSchema), checkAuth(...Object.va
 
 
 export const UserRoutes = router;
+
