@@ -22,21 +22,28 @@ passport.use(
         const isUserExist = await User.findOne({ email });
 
         if (!isUserExist) {
-          return done(null, false, { message: "User Doesn't Exist" });
+          return done("User Doesn't Exist");
         }
 
         // Is user Google Authenticate?
         const isGoogleAuthenticate = isUserExist.auths.some(
-          (providerObjects) => providerObjects.provider == "google"
+          providerObjects => providerObjects.provider == "google"
         );
 
-        // User Authenticate using Google
-        if (isGoogleAuthenticate) {
-          return done(null, false, {
-            message:
-              "You are authenticated using Google. You need to set a password for login with credentials, first login using your authenticate gmail and a set a password for your account then you can login using email and password",
+
+        if (isGoogleAuthenticate && !isUserExist.password) {
+        return done(null, false, {
+            message: "You are authenticated using Google. Please log in using Google or set a password first.",
           });
         }
+
+        // // User Authenticate using Google
+        // if (isGoogleAuthenticate) {
+        //   return done(null, false, {
+        //     message:
+        //       "You are authenticated using Google. You need to set a password for login with credentials, first login using your authenticate gmail and a set a password for your account then you can login using email and password",
+        //   });
+        // }
 
         const isPasswordMatched = await bcryptjs.compare(
           password as string,
@@ -83,7 +90,7 @@ passport.use(
             email,
             name: profile.displayName,
             picture: profile.photos?.[0].value,
-            role: Role.RECEIVER || Role.SENDER,
+            role: Role.RECEIVER,
             isVerified: true,
             auths: [
               {
@@ -103,11 +110,11 @@ passport.use(
   )
 );
 
-passport.serializeUser((user: any, done) => {
+passport.serializeUser((user: any, done: (err: any, id?: unknown) => void) => {
   done(null, user._id);
 });
 
-passport.deserializeUser(async (id: string, done) => {
+passport.deserializeUser(async (id: string, done: any) => {
   try {
     const user = await User.findById(id);
     done(null, user);
@@ -116,3 +123,4 @@ passport.deserializeUser(async (id: string, done) => {
     done(error);
   }
 });
+

@@ -8,23 +8,60 @@ export const globalErrorHandler = (
   err: any,
   req: Request,
   res: Response,
-  next: NextFunction 
+  next: NextFunction
 ) => {
-  let statusCode = 500
-  let message = `Something went wrong! ${err.message}`
+  console.log(err);
 
-  if(err instanceof AppError){
-    statusCode = err.statusCode
-    message = err.message
-  } else if (err instanceof Error){
-    statusCode = 500
-    message = err.message
+  const errorSources: any = [];
+  let statusCode = 500;
+  let message = "Something went wrong!";
+
+  // Duplicate Key Error
+  if (err.code === 11000) {
+    console.log("Duplicate entry detected", err.message);
+    const duplicate = err.message.match(/"([^"]*)"/);
+    statusCode = 400;
+    message = `${duplicate?.[1]} already exists`;
+  }
+
+  // Cast Error (Invalid ObjectId)
+  else if (err.name === "CastError") {
+    statusCode = 400;
+    message = "Invalid ObjectId. Please provide a valid MongoDB ObjectId.";
+  }
+
+  // Validation Error (Type/Enum Mismatch)
+  else if (err.name === "ValidationError") {
+    const errors = Object.values(err.errors);
+    errors.forEach((errorObj: any) =>
+      errorSources.push({
+        path: errorObj.path,
+        message: errorObj.message,
+      })
+    );
+    statusCode = 400;
+    message = "Validation error occurred";
+  }
+
+  // AppError (Custom Errors)
+  else if (err instanceof AppError) {
+    statusCode = err.statusCode;
+    message = err.message;
+  }
+
+  // General JS Error
+  else if (err instanceof Error) {
+    statusCode = 500;
+    message = err.message;
   }
 
   res.status(statusCode).json({
     success: false,
-    message, 
+    message,
+    errorSources,
     err,
-    stack: envVars.NODE_ENV === "development" ? err.stack : null
-  })
-}
+    stack: envVars.NODE_ENV === "development" ? err.stack : null,
+  });
+};
+
+
