@@ -4,8 +4,23 @@ import { router } from "./app/routes"
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler"
 import notFound from "./app/middlewares/notFound"
 import cookieParser from "cookie-parser"
+import expressSession from "express-session";
+import passport from "passport";
+import { envVars } from "./app/config/env"
+
 
 const app = express()
+app.use(
+  expressSession({
+    secret: envVars.EXPRESS_SESSION_SECRET, // 🔒 Use a secure secret from .env
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 app.use(cookieParser())
 app.use(express.json())
