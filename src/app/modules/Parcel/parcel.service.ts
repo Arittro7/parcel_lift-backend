@@ -1,7 +1,7 @@
 import  httpStatus  from 'http-status-codes';
 import AppError from "../../errorHelpers/AppError";
 import { User } from "../User/user.model";
-import { IParcel } from "./parcel.interface";
+import { IParcel, ParcelStatus } from "./parcel.interface";
 import { generateTrackingId } from '../../utils/generateTrackingId';
 import { Parcel } from './parcel.model';
 
@@ -23,6 +23,25 @@ const createParcel = async (senderId: string, payload: Partial<IParcel>) =>{
     trackingId,
     sender: sender._id,
     receiver: payload.receiver,
-    parcelType: 
+    parcelType: payload.parcelType,
+    weight: payload.weight,
+    pickupAddress: payload.pickupAddress,
+    deliveryAddress: payload.deliveryAddress,
+    fee: payload.fee,
+    parcelStatus: ParcelStatus.REQUESTED,
+    statusLogs: [
+      {
+        status: ParcelStatus.REQUESTED,
+        updatedBy: sender._id,
+        note: "Parcel created by Sender",
+        timestamp: new Date()
+      }
+    ]
   })
+
+  return parcel
+}
+
+export const ParcelServices = {
+  createParcel
 }
