@@ -1,19 +1,21 @@
-import { Types } from 'mongoose';
+import { Types } from "mongoose";
 
 export enum ParcelStatus {
-  REQUESTED = 'REQUESTED',
-  APPROVED = 'APPROVED',
-  DISPATCHED = 'DISPATCHED',
-  IN_TRANSIT = 'IN_TRANSIT',
-  DELIVERED = 'DELIVERED',
-  CANCELLED = 'CANCELLED',
+    REQUESTED = "REQUESTED",
+    APPROVED = "APPROVED",
+    RETURNED = "RETURNED",
+    DISPATCHED = "DISPATCHED",
+    IN_TRANSIT = "IN_TRANSIT",
+    DELIVERED = "DELIVERED",
+    CANCELED = "CANCELED"
 }
 
+// Status log subdocument interface
 export interface IStatusLog {
-  status: ParcelStatus;
-  timestamp: Date;
-  updatedBy?: Types.ObjectId;
-  note?: string;
+    status: ParcelStatus;
+    updatedBy: Types.ObjectId;
+    note?: string;
+    timestamp: Date;
 }
 
 export interface IParcel {
@@ -26,7 +28,7 @@ export interface IParcel {
     pickupAddress: string;
     deliveryAddress: string;
     fee: number;
-    parcelStatus: ParcelStatus;
+    currentStatus: ParcelStatus;
     statusLogs: IStatusLog[];
     isBlocked?: boolean;
     createdAt?: Date;

@@ -1,84 +1,85 @@
-import { model, Schema } from 'mongoose';
-import { IParcel, IStatusLog, ParcelStatus } from './parcel.interface';
+import { Schema, model } from "mongoose";
+import { IParcel, IStatusLog, ParcelStatus } from "./parcel.interface";
 
-const statusLogSchema = new Schema<IStatusLog>(
-  {
+// Status log schema
+const statusLogSchema = new Schema<IStatusLog>({
     status: {
-      type: String,
-      enum: Object.values(ParcelStatus),
-      required: true,
-    },
-    timestamp: {
-      type: Date,
-      default: Date.now,
+        type: String,
+        enum: Object.values(ParcelStatus),
+        required: true,
     },
     updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
     },
-    note: {
-      type: String,
-      maxlength: 200,
-    },
-  },
-  { _id: false },
-);
+    note: { type: String },
+    timestamp: { type: Date, default: Date.now },
+}, {
+    versionKey: false,
+    _id: false
+});
 
-const parcelSchema = new Schema<IParcel>(
-  {
+// Parcel schema
+const parcelSchema = new Schema<IParcel>({
     trackingId: {
-      type: String,
-      required: true,
-      unique: true,
+        type: String,
+        required: true,
+        unique: true,
     },
-    sender: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    receiver: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    parcelType: {
-      type: String,
-      required: true,
-      trim: true,
-      maxlength: 50,
-    },
-    weight: {
-      type: Number,
-      required: true,
-      min: 0.1,
-    },
-    pickupAddress: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    deliveryAddress: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    fee: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    parcelStatus: {
-      type: String,
-      enum: Object.values(ParcelStatus),
-      default: ParcelStatus.REQUESTED,
-    },
-    statusLogs: [statusLogSchema],
-    isBlocked: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  { timestamps: true, versionKey: false },
-);
 
-export const Parcel = model<IParcel>('Parcel', parcelSchema);
+    sender: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+
+    receiver: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+
+    parcelType: {
+        type: String,
+        required: true,
+    },
+
+    weight: {
+        type: Number,
+        required: true,
+    },
+
+    pickupAddress: {
+        type: String,
+        required: true,
+    },
+
+    deliveryAddress: {
+        type: String,
+        required: true,
+    },
+
+    fee: {
+        type: Number,
+        required: true,
+    },
+
+    currentStatus: {
+        type: String,
+        enum: Object.values(ParcelStatus),
+        default: ParcelStatus.REQUESTED,
+    },
+
+    statusLogs: {
+        type: [statusLogSchema],
+        default: [],
+    },
+
+    isBlocked: {
+        type: Boolean,
+        default: false,
+    }
+}, { timestamps: true, versionKey: false });
+
+export const Parcel = model<IParcel>("Parcel", parcelSchema);

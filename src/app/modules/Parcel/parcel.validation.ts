@@ -1,24 +1,38 @@
-import z from 'zod';
-import { ParcelStatus } from './parcel.interface';
+import z from "zod";
+import { ParcelStatus } from "./parcel.interface";
 
 export const createParcelZodSchema = z.object({
-  receiver: z.string({ message: 'Receiver must have a valid ID' }).regex(/^[0-9a-fA-F]{24}$/, {
-    message: 'Invalid receiver ID',
-  }),
-  type: z
-    .string({ message: 'Type must be string' })
-    .min(2, { message: 'Type must be at least 2 characters long.' })
-    .max(50, { message: 'No more than 50 characters.' }),
-  weight: z.number({ message: 'Weight must be a number' }).min(0.1, { message: 'Weight must be at least 0.1 kg' }),
-  senderAddress: z
-    .string({ message: 'Sender address must be string' })
-    .min(5, { message: 'Sender address must be at least 5 characters long.' }),
-  receiverAddress: z
-    .string({ message: 'Receiver address must be string' })
-    .min(5, { message: 'Receiver address must be at least 5 characters long.' }),
-  fee: z.number({ message: 'Fee must be a number' }).min(0, { message: 'Fee cannot be negative' }),
+    receiver: z
+        .string({ message: "Receiver ID is required" })
+        .regex(/^[a-f\d]{24}$/i, "Receiver must be a valid MongoDB ObjectId"),
+
+    parcelType: z
+        .string({ message: "Parcel type is required" })
+        .min(2, "Parcel type must be at least 2 characters long"),
+
+    weight: z
+        .number({ message: "Weight is required" })
+        .positive("Weight must be a positive number"),
+
+    pickupAddress: z
+        .string({ message: "Pickup address is required" })
+        .min(5, "Pickup address must be at least 5 characters"),
+
+    deliveryAddress: z
+        .string({ message: "Delivery address is required" })
+        .min(5, "Delivery address must be at least 5 characters"),
+
+    fee: z
+        .number({ message: "Fee is required" })
+        .nonnegative("Fee must be a non-negative number"),
 });
 
 export const updateParcelStatusZodSchema = z.object({
-  status: z.enum(Object.values(ParcelStatus) as [string], { message: 'Invalid status' }),
+    status: z.enum(Object.values(ParcelStatus) as [string, ...string[]], {
+        message: "Status is required",
+    }),
+    note: z
+        .string()
+        .max(200, "Note cannot exceed 200 characters")
+        .optional(),
 });
