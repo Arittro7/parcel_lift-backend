@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import passport from "passport";
-import { Strategy as GoogleStrategy, Profile, VerifyCallback } from "passport-google-oauth20";
+import {
+  Strategy as GoogleStrategy,
+  Profile,
+  VerifyCallback,
+} from "passport-google-oauth20";
 import { Strategy as localStrategy } from "passport-local";
 import { envVars } from "./env";
 import { User } from "../modules/User/user.model";
 import { Role } from "../modules/User/user.interface";
-import  bcryptjs  from 'bcryptjs';
+import bcryptjs from "bcryptjs";
 
 passport.use(
   new localStrategy(
@@ -17,9 +21,21 @@ passport.use(
       try {
         const isUserExist = await User.findOne({ email });
 
-
         if (!isUserExist) {
-          return done(null, false, { message: "User Doesn't Exist"}); 
+          return done(null, false, { message: "User Doesn't Exist" });
+        }
+
+        // Is user Google Authenticate?
+        const isGoogleAuthenticate = isUserExist.auths.some(
+          (providerObjects) => providerObjects.provider == "google"
+        );
+
+        // User Authenticate using Google
+        if (isGoogleAuthenticate) {
+          return done(null, false, {
+            message:
+              "You are authenticated using Google. You need to set a password for login with credentials, first login using your authenticate gmail and a set a password for your account then you can login using email and password",
+          });
         }
 
         const isPasswordMatched = await bcryptjs.compare(
@@ -31,8 +47,7 @@ passport.use(
           return done(null, false, { message: "Password Doesn't Match" });
         }
 
-        return done(null, isUserExist)
-
+        return done(null, isUserExist);
       } catch (error) {
         console.log(error);
         done(error);
@@ -41,7 +56,6 @@ passport.use(
   )
 );
 
-
 passport.use(
   new GoogleStrategy(
     {
@@ -49,7 +63,12 @@ passport.use(
       clientSecret: envVars.GOOGLE_CLIENT_SECRET,
       callbackURL: envVars.GOOGLE_CALLBACK_URL,
     },
-    async (accessToken: string, refreshToken: string, profile: Profile, done: VerifyCallback) => {
+    async (
+      accessToken: string,
+      refreshToken: string,
+      profile: Profile,
+      done: VerifyCallback
+    ) => {
       try {
         const email = profile.emails?.[0].value;
 
@@ -85,17 +104,15 @@ passport.use(
 );
 
 passport.serializeUser((user: any, done) => {
-  done(null, user._id); 
+  done(null, user._id);
 });
 
 passport.deserializeUser(async (id: string, done) => {
   try {
-    const user = await User.findById(id); 
+    const user = await User.findById(id);
     done(null, user);
   } catch (error) {
     console.log(error);
     done(error);
   }
 });
-
-
