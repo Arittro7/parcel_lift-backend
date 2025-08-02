@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import passport from "passport";
 import { Strategy as GoogleStrategy, Profile, VerifyCallback } from "passport-google-oauth20";
 import { envVars } from "./env";
@@ -45,3 +46,19 @@ passport.use(
     }
   )
 );
+
+passport.serializeUser((user: any, done) => {
+  done(null, user._id); 
+});
+
+passport.deserializeUser(async (id: string, done) => {
+  try {
+    const user = await User.findById(id); 
+    done(null, user);
+  } catch (error) {
+    console.log(error);
+    done(error);
+  }
+});
+
+
