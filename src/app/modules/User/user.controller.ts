@@ -2,13 +2,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status-codes";
+import { userService } from "./user.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
-import { userService } from "./user.service";
+import { JwtPayload } from "jsonwebtoken";
 
 const createUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
+    
       const user = await userService.createUser(req.body);
 
       sendResponse(res, {
@@ -16,19 +17,13 @@ const createUser = catchAsync(
         statusCode: httpStatus.CREATED,
         message: "User Created Successfully",
         data: user,
-      });
-    } catch (err: any) {
-      console.log(err);
-      next(err);
-    }
+      });  
   }
 );
 
 const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const userId = req.params.id;
-  const token = req.headers.authorization;
-
-  const verifiedToken = req.user
+  const verifiedToken = req.user as JwtPayload
 
   const payload = req.body;
 
@@ -43,22 +38,50 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 });
 
 
-const getAllUsers = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const result = await userService.getAllUsers();
 
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
-      message: "User Retrieved successfully",
+      message: "All Users Retrieve successfully",
       data: result.data,
       meta:result.meta 
     });
   }
 );
 
+const blockUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const userId = req.params.id;
+    const decodedId = (req.user as JwtPayload).userId
+
+    const result = await userService.blockUser(userId, decodedId)
+    sendResponse(res, {
+        statusCode: httpStatus.CREATED,
+        message: 'User blocked successfully',
+        success: true,
+        data: result,
+    })
+})
+
+const unblockUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const userId = req.params.id;
+
+    const result = await userService.unblockUser(userId)
+    sendResponse(res, {
+        statusCode: httpStatus.CREATED,
+        message: 'User unblocked successfully',
+        success: true,
+        data: result,
+    })
+})
+
 export const UserController = {
   createUser,
   getAllUsers,
-  updateUser
+  updateUser,
+  blockUser,
+  unblockUser
 };

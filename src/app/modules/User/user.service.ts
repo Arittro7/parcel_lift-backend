@@ -1,10 +1,10 @@
-import  httpStatus  from 'http-status-codes';
 import AppError from "../../errorHelpers/AppError";
-import { IAuthProvider, IUser, Role } from "./user.interface";
+import { IAuthProvider, IUser, Role, UserStatus } from "./user.interface";
 import { User } from "./user.model";
-import { JwtPayload } from 'jsonwebtoken';
+import  httpStatus  from 'http-status-codes';
 import bcryptjs from "bcryptjs"
 import { envVars } from '../../config/env';
+import { JwtPayload } from 'jsonwebtoken';
 
 const createUser = async (payload: Partial<IUser>) => {
   const {email, password, ...rest } = payload;
@@ -26,12 +26,12 @@ const createUser = async (payload: Partial<IUser>) => {
     email,
     password: hashedPassword,
     auths: [authProvider],
-    ...rest
+    ...rest,
+    role: payload.role || Role.SENDER
   })
   
   return user;
 };
-
 
 const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
   const ifUserExist = await User.findById(userId);
@@ -43,7 +43,7 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
   // 🧑‍⚖️ Restrict role updates for normal users/guides
   if (payload.role) {
     if (decodedToken.role === Role.RECEIVER || decodedToken.role === Role.SENDER) {
-      throw new AppError(httpStatus.FORBIDDEN, "You Are Not Authorized");
+      throw new AppError(httpStatus.FORBIDDEN, "Ya Habibi! You Are Not Authorized");
     }
 
     // ❌ Admins can't promote to super admin
@@ -89,8 +89,49 @@ const getAllUsers = async () => {
   } ;
 };
 
+const getUserById = async (userId: string) => {
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+    }
+    return user;
+};
+
+const blockUser = async (userId: string, decodedId: string) => {
+    if (userId === decodedId) {
+        throw new AppError(httpStatus.BAD_REQUEST, "You cannot block yourself");
+    }
+
+    const user = await User.findByIdAndUpdate(
+        userId,
+        { isActive: UserStatus.BLOCKED },
+        { new: true, runValidators: true }
+    );
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+    }
+    return user;
+};
+
+const unblockUser = async (userId: string) => {
+    const user = await User.findByIdAndUpdate(
+        userId,
+        { isActive: UserStatus.ACTIVE },
+        { new: true, runValidators: true }
+    );
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+    }
+    return user;
+};
+
 export const userService = {
   createUser,
   getAllUsers,
-  updateUser
+  updateUser,
+  getUserById,
+  blockUser,
+  unblockUser
 };

@@ -2,7 +2,9 @@ import z from "zod";
 import { Role, UserStatus } from "./user.interface";
 
 export const createUserZodSchema = z.object({
-      name: z.string({message: "Name must be string"}).min(2, {message: "Name too short minimum 2 character required"}).max(50, {message: "Name too long"}),
+      name: z.string({message: "Name must be string"})
+      .min(2, {message: "Name too short minimum 2 character required"})
+      .max(50, {message: "Name too long"}),
       // `Name 👆🏾 Email 👇🏾 
       email: z
         .string({ message: "Email must be string" })
@@ -37,18 +39,11 @@ export const createUserZodSchema = z.object({
       
   })
 
-// Duplicate the createUserZodSchema for updateUserZodSchema
-/**
- * User may update only one filed, that's why add optional() in every field
- * Email can't be updated
- */
 export const updateUserZodSchema = z.object({
     name: z
         .string({ message: "Name must be string" })
         .min(2, { message: "Name must be at least 2 characters long." })
         .max(50, { message: "Name cannot exceed 50 characters." }).optional(),
-        
-        // Email can't be updated
 
     password: z
         .string({ message: "Password must be string" })
