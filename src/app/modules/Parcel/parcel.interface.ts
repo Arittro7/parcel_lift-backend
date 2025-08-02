@@ -17,16 +17,18 @@ export interface IStatusLog {
 }
 
 export interface IParcel {
-  _id?: Types.ObjectId;
-  trackingId: string;
-  sender: Types.ObjectId;
-  receiver: Types.ObjectId;
-  type: string;
-  weight: number;
-  senderAddress: string;
-  receiverAddress: string;
-  fee: number;
-  status: ParcelStatus;
-  statusLogs: IStatusLog[];
-  isBlocked: boolean;
+    _id?: Types.ObjectId;
+    trackingId: string;
+    sender: Types.ObjectId;
+    receiver: Types.ObjectId;
+    parcelType: string;
+    weight: number;
+    pickupAddress: string;
+    deliveryAddress: string;
+    fee: number;
+    parcelStatus: ParcelStatus;
+    statusLogs: IStatusLog[];
+    isBlocked?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }

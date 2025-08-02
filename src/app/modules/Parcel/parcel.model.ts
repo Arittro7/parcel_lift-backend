@@ -41,7 +41,7 @@ const parcelSchema = new Schema<IParcel>(
       ref: 'User',
       required: true,
     },
-    type: {
+    parcelType: {
       type: String,
       required: true,
       trim: true,
@@ -52,12 +52,12 @@ const parcelSchema = new Schema<IParcel>(
       required: true,
       min: 0.1,
     },
-    senderAddress: {
+    pickupAddress: {
       type: String,
       required: true,
       trim: true,
     },
-    receiverAddress: {
+    deliveryAddress: {
       type: String,
       required: true,
       trim: true,
@@ -67,7 +67,7 @@ const parcelSchema = new Schema<IParcel>(
       required: true,
       min: 0,
     },
-    status: {
+    parcelStatus: {
       type: String,
       enum: Object.values(ParcelStatus),
       default: ParcelStatus.REQUESTED,
